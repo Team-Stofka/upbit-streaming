@@ -1,4 +1,4 @@
-package org.example.upbitstreaming;
+package org.stofka.upbitstreaming;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

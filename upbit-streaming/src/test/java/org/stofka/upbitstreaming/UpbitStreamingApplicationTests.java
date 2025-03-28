@@ -1,4 +1,4 @@
-package org.example.upbitstreaming;
+package org.stofka.upbitstreaming;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
