@@ -2,6 +2,8 @@ package org.stofka.upbitstreaming;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import okhttp3.*;
 import okio.ByteString;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,13 +57,51 @@ public class CandleWebSocketService {
                 try {
                     // 바이너리 데이터를 UTF-8로 변환
                     String text = bytes.utf8();
-//                    System.out.println(text);  // 받은 데이터 출력
 
                     // JSON 파싱
                     JsonNode jsonNode = objectMapper.readTree(text);
 
+                    // 스키마 기반 JSON 생성
+                    ObjectNode schemaNode = objectMapper.createObjectNode();
+                    schemaNode.put("type", "struct");
+
+                    ArrayNode fieldsNode = objectMapper.createArrayNode();
+                    fieldsNode.add(createFieldNode("type", "string"));
+                    fieldsNode.add(createFieldNode("code", "string"));
+                    fieldsNode.add(createFieldNode("opening_price", "double"));
+                    fieldsNode.add(createFieldNode("high_price", "double"));
+                    fieldsNode.add(createFieldNode("low_price", "double"));
+                    fieldsNode.add(createFieldNode("trade_price", "double"));
+                    fieldsNode.add(createFieldNode("candle_acc_trade_volume", "double"));
+                    fieldsNode.add(createFieldNode("candle_acc_trade_price", "double"));
+                    fieldsNode.add(createFieldNode("timestamp", "int64"));
+                    fieldsNode.add(createFieldNode("stream_type", "string"));
+
+                    schemaNode.set("fields", fieldsNode);
+                    schemaNode.put("optional", false);
+                    schemaNode.put("name", "market_candle");
+
+
+                    // payload 생성
+                    ObjectNode payloadNode = objectMapper.createObjectNode();
+                    payloadNode.put("type", jsonNode.get("type").asText());
+                    payloadNode.put("code", jsonNode.get("code").asText());
+                    payloadNode.put("opening_price", jsonNode.get("opening_price").asDouble());
+                    payloadNode.put("high_price", jsonNode.get("high_price").asDouble());
+                    payloadNode.put("low_price", jsonNode.get("low_price").asDouble());
+                    payloadNode.put("trade_price", jsonNode.get("trade_price").asDouble());
+                    payloadNode.put("candle_acc_trade_volume", jsonNode.get("candle_acc_trade_volume").asDouble());
+                    payloadNode.put("candle_acc_trade_price", jsonNode.get("candle_acc_trade_price").asDouble());
+                    payloadNode.put("timestamp", jsonNode.get("timestamp").asLong());
+                    payloadNode.put("stream_type", jsonNode.get("stream_type").asText());
+
+                    // 최종 JSON 생성
+                    ObjectNode finalJson = objectMapper.createObjectNode();
+                    finalJson.set("schema", schemaNode);
+                    finalJson.set("payload", payloadNode);
+
                     // 메시지 형식 지정
-                    String logMessage = jsonNode.toString();
+                    String logMessage = objectMapper.writeValueAsString(finalJson);
                     System.out.println(logMessage);
 
                     kafkaSender.send("candle", logMessage);  // "candle" 데이터 유형으로 전송
@@ -123,5 +163,13 @@ public class CandleWebSocketService {
             this.type = type;
             this.codes = codes;
         }
+    }
+
+    // 필드 노드 생성 메서드
+    private ObjectNode createFieldNode(String fieldName, String fieldType) {
+        ObjectNode fieldNode = objectMapper.createObjectNode();
+        fieldNode.put("field", fieldName);
+        fieldNode.put("type", fieldType);
+        return fieldNode;
     }
 }
