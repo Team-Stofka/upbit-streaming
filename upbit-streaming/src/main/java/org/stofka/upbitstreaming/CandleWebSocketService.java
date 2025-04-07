@@ -7,11 +7,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import okhttp3.*;
 import okio.ByteString;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,14 +126,18 @@ public class CandleWebSocketService {
     }
 
     private void loadMarkets() throws IOException {
-        File file = Paths.get(dataFilePath).toFile();
-        JsonNode jsonNode = objectMapper.readTree(file);
+        String classpathLocation = dataFilePath.replace("classpath:", "");
+        ClassPathResource resource = new ClassPathResource(classpathLocation);
 
-        for (JsonNode node : jsonNode) {
-            String market = node.get("market").asText();
+        try (InputStream is = resource.getInputStream()) {
+            JsonNode jsonNode = objectMapper.readTree(is);
+
+            for (JsonNode node : jsonNode) {
+                String market = node.get("market").asText();
                 markets.add(market);
+            }
+            System.out.println("📌 KRW 종목 로드 완료: " + markets.size() + "개");
         }
-        System.out.println("📌 KRW 종목 로드 완료: " + markets.size() + "개");
     }
 
     private static void sendSubscriptionMessage(WebSocket webSocket) throws IOException {

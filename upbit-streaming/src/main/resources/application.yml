@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+app:
+  data-file: classpath:data.json
