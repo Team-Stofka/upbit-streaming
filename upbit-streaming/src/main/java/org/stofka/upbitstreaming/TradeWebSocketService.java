@@ -58,7 +58,7 @@ public class TradeWebSocketService {
                     String logMessage = jsonNode.toString();
                     System.out.println(logMessage);
 
-                    kafkaSender.send("trade", logMessage);
+//                    kafkaSender.send("trade", logMessage);
 
                 } catch (Exception e) {
                     System.out.println("⚠️ JSON 파싱 오류: " + e.getMessage());
