@@ -58,7 +58,7 @@ public class OrderbookWebSocketService {
                     String logMessage = jsonNode.toString();
                     System.out.println(logMessage);
 
-                    kafkaSender.send("orderbook", logMessage);
+//                    kafkaSender.send("orderbook", logMessage);
 
                 } catch (Exception e) {
                     System.out.println("⚠️ JSON 파싱 오류: " + e.getMessage());
