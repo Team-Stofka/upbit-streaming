@@ -10,3 +10,12 @@ spring:
 
 app:
   data-file: classpath:data.json
+
+management:
+  server:
+    port: 8080   # 기본 포트
+  endpoints:
+    web:
+      base-path: /upbit-streaming
+      exposure:
+        include: health, info, prometheus
